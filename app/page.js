@@ -1,65 +1,92 @@
-import Image from "next/image";
+'use client'
+import { useState, useEffect } from "react"
 
 export default function Home() {
+  const [users, setUsers] = useState([])
+  const [pnl, setPnl] = useState([])
+  const [loading, setLoading] = useState(false)
+
+  const fetchUsers = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/User')
+      const data = await res.json()
+      if (data.success) {
+        setUsers(data.users)
+        console.log(users)
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+  const fetchPnl = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/pnl')
+      const data = await res.json()
+      if (data.success) {
+        setPnl(data)
+        console.log(pnl)
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchUsers()
+  }, [])
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started with BizSoft, edit the page.js file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <div style={{ padding: '20px' }}>
+      <h1>Users</h1>
+      <button onClick={fetchUsers} style={{ marginBottom: '20px' }}>
+        Refresh Users
+      </button>
+      <button onClick={fetchPnl} style={{ marginBottom: '20px' }}>
+        Refresh PNL
+      </button>
+
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '2px solid #ddd' }}>
+              <th style={{ padding: '10px', textAlign: 'left' }}>ID</th>
+              <th style={{ padding: '10px', textAlign: 'left' }}>Name</th>
+              <th style={{ padding: '10px', textAlign: 'left' }}>Email</th>
+              <th style={{ padding: '10px', textAlign: 'left' }}>Role</th>
+              <th style={{ padding: '10px', textAlign: 'left' }}>Created At</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.length > 0 ? (
+              users.map((user) => (
+                <tr key={user.id} style={{ borderBottom: '1px solid #ddd' }}>
+                  <td style={{ padding: '10px' }}>{user.UserID}</td>
+                  <td style={{ padding: '10px' }}>{user.UserName}</td>
+                  <td style={{ padding: '10px' }}>{user.EmailID}</td>
+                  <td style={{ padding: '10px' }}>{user.role}</td>
+                  <td style={{ padding: '10px' }}>
+                    {user.created_at ? new Date(user.created_at).toLocaleString() : 'N/A'}
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" style={{ padding: '10px', textAlign: 'center' }}>
+                  No users found
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      )}
     </div>
-  );
+  )
 }
